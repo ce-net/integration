@@ -1,0 +1,60 @@
+# ce-integration — cross-platform build + test CI.
+#
+# Portability gate for the two-node mesh assertion driver: it must build on Linux, macOS, AND
+# Windows. The driver owns no node lifecycle (the run.sh / run.ps1 harness boots the nodes), so CI
+# only needs to build + test the driver crate here; the full mesh run needs a real ce node binary
+# and is exercised separately.
+#
+# Path deps: this crate path-depends on ce-rs (Rust SDK). CI checks it out as a sibling (../ce-rs)
+# so the path dep in Cargo.toml resolves. ce-cap / ce-identity live inside the ce repo; nothing
+# here path-depends on them, but ce is checked out as ../ce so the layout matches CLAUDE.md.
+
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout integration
+        uses: actions/checkout@v4
+        with:
+          path: integration
+
+      # Sibling path dep: this crate path-depends on ce-rs.
+      - name: Checkout ce-rs (Rust SDK)
+        uses: actions/checkout@v4
+        with:
+          repository: ce-net/ce-rs
+          path: ce-rs
+      # ce hosts ce-cap / ce-identity; checked out so the workspace layout matches CLAUDE.md.
+      - name: Checkout ce (node)
+        uses: actions/checkout@v4
+        with:
+          repository: ce-net/ce
+          path: ce
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: integration
+
+      - name: Build
+        working-directory: integration
+        run: cargo build
+
+      - name: Test
+        working-directory: integration
+        run: cargo test

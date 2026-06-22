@@ -29,6 +29,15 @@ CE_BIN=/path/to/ce ./run.sh                         # use a different ce binary
 RUST_LOG=debug ./run.sh                             # verbose driver logging
 ```
 
+On Windows (or anywhere with PowerShell 7+), use the byte-equivalent `run.ps1` — it boots `ce.exe`,
+wires the same env, and runs the same driver:
+
+```powershell
+./run.ps1                                            # default ports 1890x / 1490x
+$env:A_API='18911'; $env:B_API='18912'; ./run.ps1    # override ports
+$env:CE_BIN='C:\path\to\ce.exe'; ./run.ps1           # use a different ce binary
+```
+
 Rerunnable: every node process and temp dir is killed/removed by an `EXIT/INT/TERM` trap, even on
 failure or Ctrl-C. Exit code mirrors the driver: `0` iff every non-blocked scenario passed.
 
@@ -69,6 +78,7 @@ the stream (EOF) and the driver reports the scenario **BLOCKED** (by-design), no
 integration/
 ├── Cargo.toml        # ce-integration bin; depends on ce-rs by path
 ├── run.sh            # boots/tears down the 2-node mesh, mints caps, runs the driver
+├── run.ps1           # Windows/PowerShell equivalent of run.sh (boots ce.exe)
 ├── src/main.rs       # the assertion driver (PASS/FAIL/BLOCKED matrix)
 └── README.md
 ```
