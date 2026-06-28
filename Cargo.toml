@@ -11,7 +11,7 @@ name = "ce-integration"
 path = "src/main.rs"
 
 [dependencies]
-ce-rs = { path = "../ce-rs" }
+ce-rs = { git = "https://github.com/ce-net/ce-rs" }
 anyhow = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "io-util"] }
 tracing = "0.1"
